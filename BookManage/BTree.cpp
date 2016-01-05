@@ -2,6 +2,8 @@
 #include "StdAfx.h"
 #include "BTree.h"
 
+IMPLEMENT_SERIAL(BTree,CObject,VERSIONABLE_SCHEMA|2)
+
 BTree::BTree()
 {
 	root=NULL;//初始化变量
@@ -125,7 +127,7 @@ Status BTree::DeleteBTree(KeyType k)//删除结点,通过关键字k删除
 			}
 			if(p==root)//只有一个根节点 
 			{
-				free(root);
+				delete root;
 				root=NULL;
 				return OK;
 			}
@@ -149,7 +151,7 @@ Status BTree::DeleteBTree(KeyType k)//删除结点,通过关键字k删除
 					if((p==root||p->parent==NULL)&&p->keynum==0)
 					{
 						root=p->ptr[0];
-						free(p);
+						delete p;
 						p=root;
 						root->parent=NULL;
 						return OK;
@@ -157,6 +159,34 @@ Status BTree::DeleteBTree(KeyType k)//删除结点,通过关键字k删除
 				}
 				return OK;
 			}
+		}
+	}
+}
+
+void BTree::Serialize(CArchive& ar)//序列化
+{
+	DataType data;
+	int size,i;
+	CObject::Serialize(ar);
+	if(ar.IsStoring())//序列化
+	{
+		CArray<DataType> arr;
+		addToArr(root,arr);
+		size=arr.GetSize();
+		ar<<size;
+		for(i=0;i<size;i++)
+		{
+			data=arr.GetAt(i);
+			ar<<data.no<<data.name<<data.author<<data.current_num<<data.total_num;
+		}
+	}
+	else//反序列化
+	{
+		ar>>size;
+		for(i=0;i<size;i++)
+		{
+			ar>>data.no>>data.name>>data.author>>data.current_num>>data.total_num;
+			InsertBTree(data);
 		}
 	}
 }
@@ -378,6 +408,26 @@ void BTree::exchange(pBTNode &T,int i)//与右最左结点交换
 	}
 	p->keynum--;//删除结点
 	T=p;
+}
+
+void BTree::Traverse(pBTNode T,void (BTree::*visit)(DataType e))//遍历
+{
+	int i; 
+	if(T!=NULL)
+	{
+		for(i=1;i<=T->keynum;i++)(this->*visit)(T->key[i]);
+		for(i=0;i<=T->keynum;i++)Traverse(T->ptr[i],visit);
+	}
+}
+
+void BTree::addToArr(pBTNode T,CArray<DataType> &arr)//加入结点到数组arr中
+{
+	int i; 
+	if(T!=NULL)
+	{
+		for(i=1;i<=T->keynum;i++)arr.Add(T->key[i]);
+		for(i=0;i<=T->keynum;i++)addToArr(T->ptr[i],arr);
+	}
 }
 
 void BTree::destroyBTree(pBTNode &T)

@@ -12,12 +12,7 @@
 #define new DEBUG_NEW
 #endif
 
-
 // CBookManageDlg 对话框
-
-
-
-
 CBookManageDlg::CBookManageDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CBookManageDlg::IDD, pParent)
 {
@@ -36,6 +31,9 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDCANCEL, &CBookManageDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_INSERT, &CBookManageDlg::OnBnClickedInsert)
 	ON_BN_CLICKED(IDC_REFLASH, &CBookManageDlg::OnBnClickedReflash)
+	ON_BN_CLICKED(IDC_DELETE, &CBookManageDlg::OnBnClickedDelete)
+	ON_WM_CLOSE()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -43,6 +41,7 @@ END_MESSAGE_MAP()
 
 BOOL CBookManageDlg::OnInitDialog()
 {
+	CFile file;
 	CDialogEx::OnInitDialog();
 
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
@@ -59,6 +58,16 @@ BOOL CBookManageDlg::OnInitDialog()
 	m_list.InsertColumn(2,_T("著者"),LVCFMT_LEFT,100);
 	m_list.InsertColumn(3,_T("现存量"),LVCFMT_LEFT,60);
 	m_list.InsertColumn(4,_T("总存量"),LVCFMT_LEFT,60);
+	/*载入记录*/
+	tree=new BTree();
+	if(file.Open(_T("record.dat"),CFile::modeRead|CFile::modeNoTruncate|CFile::modeCreate)==TRUE)
+	{
+		file.SeekToBegin();
+		CArchive loader(&file,CArchive::load);
+		tree=((BTree*)loader.ReadObject((*tree).GetRuntimeClass()));
+		loader.Close();
+		OnBnClickedReflash();
+	}
 	return TRUE;// 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -116,7 +125,7 @@ void CBookManageDlg::OnBnClickedInsert()
 		data.author=dlg.book_author;
 		data.current_num=data.total_num=dlg.book_num;
 		//插入到B树
-		if(tree.InsertBTree(data)==OK)
+		if((*tree).InsertBTree(data)==OK)
 		{
 			//插入到ListControl
 			int row=m_list.GetItemCount();
@@ -161,12 +170,49 @@ void CBookManageDlg::DisplayList(pBTNode T)
 	}
 }
 
-
 void CBookManageDlg::OnBnClickedReflash()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_list.SetRedraw(FALSE);
 	m_list.DeleteAllItems();
-	DisplayList(tree.GetRoot());
+	DisplayList((*tree).GetRoot());
 	m_list.SetRedraw(TRUE);
+}
+
+void CBookManageDlg::OnBnClickedDelete()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	POSITION pos=m_list.GetFirstSelectedItemPosition();
+	int row;
+	KeyType key;
+	if(pos!=NULL)
+	{
+		row=(int)m_list.GetNextSelectedItem(pos);
+		if(row>=0&&AfxMessageBox(_T("你确定要删除")+m_list.GetItemText(row,1)+_T("吗?"),MB_ICONEXCLAMATION|MB_OKCANCEL)==IDOK)
+		{
+			key=_ttoi(m_list.GetItemText(row,0));
+			if((*tree).DeleteBTree(key)==OK)
+			{
+				m_list.DeleteItem(row);
+				AfxMessageBox(_T("删除成功!"));
+			}
+			else
+			{
+				AfxMessageBox(_T("删除失败"));
+			}
+		}
+	}
+}
+
+void CBookManageDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+	// TODO: 在此处添加消息处理程序代码
+	/*把所有记录保存*/
+	CFile file(_T("record.dat"),CFile::modeCreate|CFile::modeReadWrite);
+	CArchive store(&file,CArchive::store);
+	store.WriteObject(tree);
+	store.Flush();
+	store.Close();
+	delete tree;
 }
