@@ -26,3 +26,8 @@ float RunTimer::get_time()
 	run_count.QuadPart=end_time.QuadPart-start_time.QuadPart;
 	return (float)run_count.QuadPart/(float)freq.QuadPart;
 }
+
+void RunTimer::get_str_time(CString &time)
+{
+	time.Format(_T("%f√Î"),get_time());
+}

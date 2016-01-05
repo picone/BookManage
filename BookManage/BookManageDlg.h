@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "afxcmn.h"
+#include "RunTimer.h"
 #include "BTree.h"
 
 // CBookManageDlg 对话框
@@ -27,5 +28,7 @@ protected:
 private:
 	BTree *tree;
 	CListCtrl m_list;//图书ListView
+	CString m_timer;//计时
 	void DisplayList(pBTNode T);
+	void EndTime(RunTimer &timer);
 };

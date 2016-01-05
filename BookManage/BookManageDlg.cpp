@@ -15,6 +15,7 @@
 // CBookManageDlg 对话框
 CBookManageDlg::CBookManageDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CBookManageDlg::IDD, pParent)
+	, m_timer(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -23,6 +24,7 @@ void CBookManageDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_BOOK, m_list);
+	DDX_Text(pDX, IDC_TIMER, m_timer);
 }
 
 BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
@@ -32,13 +34,9 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_INSERT, &CBookManageDlg::OnBnClickedInsert)
 	ON_BN_CLICKED(IDC_REFLASH, &CBookManageDlg::OnBnClickedReflash)
 	ON_BN_CLICKED(IDC_DELETE, &CBookManageDlg::OnBnClickedDelete)
-	ON_WM_CLOSE()
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
-
-
 // CBookManageDlg 消息处理程序
-
 BOOL CBookManageDlg::OnInitDialog()
 {
 	CFile file;
@@ -125,11 +123,13 @@ void CBookManageDlg::OnBnClickedInsert()
 		data.author=dlg.book_author;
 		data.current_num=data.total_num=dlg.book_num;
 		//插入到B树
+		RunTimer timer;
 		if((*tree).InsertBTree(data)==OK)
 		{
 			//插入到ListControl
-			int row=m_list.GetItemCount();
+			EndTime(timer);
 			CString s;
+			int row=m_list.GetItemCount();
 			s.Format(_T("%d"),data.no);
 			m_list.InsertItem(row,s);
 			m_list.SetItemText(row,1,data.name);
@@ -175,7 +175,9 @@ void CBookManageDlg::OnBnClickedReflash()
 	// TODO: 在此添加控件通知处理程序代码
 	m_list.SetRedraw(FALSE);
 	m_list.DeleteAllItems();
+	RunTimer timer;
 	DisplayList((*tree).GetRoot());
+	EndTime(timer);
 	m_list.SetRedraw(TRUE);
 }
 
@@ -191,8 +193,10 @@ void CBookManageDlg::OnBnClickedDelete()
 		if(row>=0&&AfxMessageBox(_T("你确定要删除")+m_list.GetItemText(row,1)+_T("吗?"),MB_ICONEXCLAMATION|MB_OKCANCEL)==IDOK)
 		{
 			key=_ttoi(m_list.GetItemText(row,0));
+			RunTimer timer;
 			if((*tree).DeleteBTree(key)==OK)
 			{
+				EndTime(timer);
 				m_list.DeleteItem(row);
 				AfxMessageBox(_T("删除成功!"));
 			}
@@ -215,4 +219,13 @@ void CBookManageDlg::OnDestroy()
 	store.Flush();
 	store.Close();
 	delete tree;
+}
+
+void CBookManageDlg::EndTime(RunTimer &timer)
+{
+	timer.end();
+	CString s;
+	timer.get_str_time(s);
+	m_timer=s;
+	UpdateData(FALSE);
 }
