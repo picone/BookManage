@@ -63,14 +63,17 @@ BOOL CBookManageDlg::OnInitDialog()
 	m_list.InsertColumn(3,_T("现存量"),LVCFMT_LEFT,60);
 	m_list.InsertColumn(4,_T("总存量"),LVCFMT_LEFT,60);
 	/*载入记录*/
-	tree=new BTree();
 	if(file!=NULL)
 	{
 		file.SeekToBegin();
 		CArchive loader(&file,CArchive::load);
-		tree=((BTree*)loader.ReadObject((*tree).GetRuntimeClass()));
+		tree=((BTree*)loader.ReadObject(RUNTIME_CLASS(BTree)));
 		loader.Close();
 		OnBnClickedReflash();
+	}
+	else
+	{
+		tree=new BTree();
 	}
 	/*初始化日志文件写入指针*/
 	log_file=new CFile(_T("log.txt"),CFile::modeCreate|CFile::modeReadWrite|CFile::modeNoTruncate);
