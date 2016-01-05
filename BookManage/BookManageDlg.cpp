@@ -26,11 +26,14 @@ CBookManageDlg::CBookManageDlg(CWnd* pParent /*=NULL*/)
 void CBookManageDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_BOOK, m_list);
 }
 
 BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDCANCEL, &CBookManageDlg::OnBnClickedCancel)
+	ON_BN_CLICKED(IDC_INSERT, &CBookManageDlg::OnBnClickedInsert)
 END_MESSAGE_MAP()
 
 
@@ -46,7 +49,22 @@ BOOL CBookManageDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-
+	/*初始化ListView*/
+	m_list.InsertColumn(0,_T("书号"),LVCFMT_LEFT,100);
+	m_list.InsertColumn(1,_T("书名"),LVCFMT_LEFT,100);
+	m_list.InsertColumn(2,_T("著者"),LVCFMT_LEFT,100);
+	m_list.InsertColumn(3,_T("现存量"),LVCFMT_LEFT,60);
+	m_list.InsertColumn(4,_T("总存量"),LVCFMT_LEFT,60);
+	DataType test;
+	test.name=_T("c1");
+	test.no=1;
+	tree.InsertBTree(test);
+	test.no=2;
+	test.name=_T("c2");
+	tree.InsertBTree(test);
+	test.no=3;
+	test.name=_T("c3");
+	tree.InsertBTree(test);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -86,3 +104,17 @@ HCURSOR CBookManageDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CBookManageDlg::OnBnClickedCancel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CDialogEx::OnCancel();
+}
+
+
+void CBookManageDlg::OnBnClickedInsert()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	
+}

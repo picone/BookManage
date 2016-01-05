@@ -1,9 +1,9 @@
 
 // BookManageDlg.h : 头文件
 //
-
 #pragma once
-
+#include "afxcmn.h"
+#include "BTree.h"
 
 // CBookManageDlg 对话框
 class CBookManageDlg : public CDialogEx
@@ -28,4 +28,10 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	CListCtrl m_list;// 图书ListView
+	afx_msg void OnBnClickedCancel();
+	afx_msg void OnBnClickedInsert();
+private:
+	BTree tree;
 };
