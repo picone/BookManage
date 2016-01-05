@@ -11,10 +11,9 @@ class CBookManageDlg : public CDialogEx
 public:
 	CBookManageDlg(CWnd* pParent = NULL);// 标准构造函数
 	enum { IDD = IDD_BOOKMANAGE_DIALOG };// 对话框数据
-	CListCtrl m_list;// 图书ListView
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedInsert();
-	void DisplayLine(DataType e);
+	afx_msg void OnBnClickedReflash();
 protected:
 	HICON m_hIcon;
 	// 生成的消息映射函数
@@ -25,6 +24,6 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 private:
 	BTree tree;
-	void UpdateList();
+	CListCtrl m_list;//图书ListView
+	void DisplayList(pBTNode T);
 };
-typedef void (CBookManageDlg::*visit)(DataType e);

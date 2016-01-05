@@ -1,6 +1,5 @@
 // BTree.cpp : ÊµÏÖÎÄ¼þ
 #include "StdAfx.h"
-#include "BookManageDlg.cpp"
 #include "BTree.h"
 
 BTree::BTree()
@@ -94,9 +93,72 @@ Status BTree::InsertBTree(DataType data)
 	return OK;
 }
 
-void BTree::Traverse(void (CBookManageDlg::*visit)(DataType e))//±éÀú
+pBTNode BTree::GetRoot()//»ñÈ¡¸ù½áµã
 {
-	Traverse(root,visit);
+	return root;
+}
+
+Status BTree::DeleteBTree(KeyType k)//É¾³ý½áµã,Í¨¹ý¹Ø¼ü×ÖkÉ¾³ý
+{
+	pBTNode p;
+	int i;
+	result res;
+	if(root==NULL)
+	{
+		return ERROR;
+	}
+	else
+	{
+		res=SearchBTree(k);
+		if(res.tag==FALSE)
+		{
+			return ERROR;
+		}
+		else
+		{
+			p=res.pt;
+			i=res.i;
+			exchange(p,i);
+			if(p->keynum>=(M+1)/2-1)
+			{
+				return OK;
+			}
+			if(p==root)//Ö»ÓÐÒ»¸ö¸ù½Úµã 
+			{
+				free(root);
+				root=NULL;
+				return OK;
+			}
+			else
+			{
+				while(p)
+				{
+					if(p==root||p->keynum>=(M+1)/2-1||p->parent==NULL)
+					{
+						return OK;
+					}
+					else
+					{
+						if(fix(p->parent,p)==OK)
+						{
+							return OK;
+						}
+					}
+					combine(p->parent,p);
+					p=p->parent;
+					if((p==root||p->parent==NULL)&&p->keynum==0)
+					{
+						root=p->ptr[0];
+						free(p);
+						p=root;
+						root->parent=NULL;
+						return OK;
+					}
+				}
+				return OK;
+			}
+		}
+	}
 }
 
 void BTree::copyData(DataType &to,DataType from)//¸´ÖÆ¹Ø¼ü×ÖµÄÐÅÏ¢
@@ -162,14 +224,160 @@ void BTree::newRoot(pBTNode &T,pBTNode p,DataType x,pBTNode ap)//Éú³ÉÒ»¸öÐÂµÄ½áµ
 	T->parent=NULL;
 }
 
-void Traverse(pBTNode T,void (CBookManageDlg::*visit)(DataType e))//±éÀú
+int BTree::position(pBTNode T)//Ò»¸ö½áµãÔÚË«Ç×ÖÐµÄÎ»ÖÃ,·µ»ØÆäÎ»ÖÃ i
 {
-	int i; 
-	if(T!=NULL)
+	int i=0;
+	if(T==NULL)return 0;
+	if(T->parent!=NULL)
 	{
-		for(i=1;i<=T->keynum;i++)visit(T->key[i]);
-		for(i=0;i<=T->keynum;i++)Traverse(T->ptr[i],visit);
+		while(i<=T->parent->keynum)
+		{
+			if(T==T->parent->ptr[i])return i;
+			i++;
+		}
 	}
+	return -1;
+}
+
+Status BTree::fix(pBTNode &T,pBTNode p)//µ÷ÕûÊ÷µÄ½á¹¹
+{
+	int i=position(p);//È¡µÃp ÔÚË«Ç×ÖÐµÄÎ»ÖÃ
+	int mid=(M+1)/2-1;//Òª½»»»µÄÁÙ½çµã
+	pBTNode temp;
+	int k;
+	if(i>0&&T->ptr[i-1]->keynum>mid)//Ïò×ó½è 
+	{
+		temp=T->ptr[i-1];//±È×Ô¼ºÐ¡µÄÐÖµÜ½áµã
+		p->keynum++;
+		for(k=p->keynum;k>1;k--)
+		{
+			copyData(p->key[k],p->key[k-1]);//½«Ç°ÃæµÄ½áµãºóÒÆÒ»Î»
+		}
+		if(p->ptr[0]!=NULL)
+		{
+			for(k=p->keynum;k>=1;k--)
+			{
+				p->ptr[k]=p->ptr[k-1];//½«ÒªÒÆ¶¯µÄ½áµãµÄ×Ó½áµãÏòºóÒÆ¶¯
+			}
+		}
+		copyData(p->key[1],T->key[i]);//½«Ë«Ç×µÄ½áµã¸´ÖÆµ½¸ù
+		copyData(T->key[i],temp->key[temp->keynum]);//½«Ð¡ÐÖµÜ½áµãµÄ×î´óµÄÄÇ¸öÒÆ¶¯µ½Ë«Ç×ÖÐ
+		if(temp->ptr[temp->keynum]!=NULL)//½«ÐÖµÜ½áµãµÄ×Ó½áµãÒ²¸´ÖÆ¹ýÀ´
+		{
+			p->ptr[0] = temp->ptr[temp->keynum];
+			temp->ptr[temp->keynum]->parent=p; //ÐÞ¸ÄÖ¸ÏòË«Ç×µÄ½áµã
+			temp->ptr[temp->keynum]=NULL;
+		}
+		temp->keynum--;
+		return OK;
+	}
+	else if(i<T->keynum&&T->ptr[i+1]->keynum>mid)//ÏòÓÒ½è 
+	{
+		temp=T->ptr[i+1];
+		p->keynum++;
+		copyData(p->key[p->keynum],T->key[i+1]);
+		copyData(T->key[i+1],temp->key[1]);
+		for(k=1;k<temp->keynum;k++)
+		{
+			copyData(temp->key[k],temp->key[k+1]);
+		}
+		if(temp->ptr[0]!=NULL)
+		{
+			p->ptr[p->keynum]=temp->ptr[0];
+			temp->ptr[0]->parent=p;
+			for(k=0;k<temp->keynum;k++)
+			{
+				temp->ptr[k]=temp->ptr[k+1];
+			}
+			temp->ptr[k+1]=NULL;
+		}
+		temp->keynum--;
+		return OK;
+	}
+	else
+	{
+		return ERROR;
+	}
+}
+
+Status BTree::combine(pBTNode &T,pBTNode &p)//ºÏ²¢½áµã
+{
+	int k,i=position(p);//È¡µÃp ÔÚË«Ç×ÖÐµÄÎ»ÖÃ
+	int mid=(M+1)/2-1;//½»»»µÄÌõ¼þ
+	pBTNode p2;
+	if(i==0)//Èç¹ûÊÇµÚÒ»¸öÎ»ÖÃ
+	{
+		i=1;
+		p2=T->ptr[i];
+		p->keynum++;//Ôö¼ÓÒ»¸ö½áµã
+		copyData(p->key[p->keynum],root->key[i]);//½«Ë«Ç×µÄ½áµã¸´ÖÆÏÂÀ´
+		if(p2->ptr[0]!=NULL)
+		{
+			p->ptr[p->keynum]=p2->ptr[0]; //½«ÐÖµÜµÄ×Ó½áµãÒ²¸´ÖÆ¹ýÀ´
+			p2->ptr[0]->parent=p; //ÐÞ¸ÄË«Ç×
+		}		
+		for(k=i;k<root->keynum;k++)
+		{//½«Ë«Ç×µÄ½áµãÏòÇ°ÒÆ¶¯Ò»Î»
+			copyData(T->key[k],T->key[k+1]);
+		}
+		p->keynum++;
+		p->key[p->keynum]=p2->key[1];
+		if(p2->ptr[1]!=NULL)
+		{
+			p->ptr[p->keynum]=p2->ptr[1];//½«ÐÖµÜµÄ×Ó½áµãÒ²¸´ÖÆ¹ýÀ´
+			p2->ptr[1]->parent=p;//ÐÞ¸ÄÖ¸ÏòË«Ç×µÄ½áµã
+		}
+		T->keynum--;
+		delete p2;
+		p2=NULL;
+		for(k=1;k<=T->keynum;k++)
+		{
+			T->ptr[k]=T->ptr[k+1];//½«Ë«Ç×½áµã×Ó½áµãÏòÇ°ÒÆ¶¯
+		}
+		T->ptr[k+1]=NULL;
+	}
+	else if(i>0)
+	{
+		p2=T->ptr[i-1];
+		p2->keynum++;
+		copyData(p2->key[p2->keynum],T->key[i]);//¸´ÖÆ¸ù½áµãµÄÖµµ½×Ó½áµãÖÐ
+		if(p->ptr[0]!=NULL)
+		{
+			p2->ptr[p2->keynum]=p->ptr[0];
+			p->ptr[0]->parent=p2;//ÐÞ¸ÄÖ¸ÏòË«Ç×µÄ½áµã
+		}				
+		for(k=i;k<T->keynum;k++)
+		{
+			copyData(T->key[k],T->key[k+1]);//½«½áµãÇ°ÒÆ
+			T->ptr[k]=T->ptr[k+1];//½«×Ó½áµãÇ°ÒÆ
+		}
+		T->ptr[k+1]=NULL;
+		T->keynum--;
+		delete p;
+		p=p2;
+	}
+	return OK;
+}
+
+void BTree::exchange(pBTNode &T,int i)//ÓëÓÒ×î×ó½áµã½»»»
+{
+	pBTNode p=T;
+	if(p->ptr[i]!=NULL)
+	{
+		p=p->ptr[i];
+		while(p->ptr[0])
+		{
+			p=p->ptr[0];
+		}
+		copyData(T->key[i],p->key[1]);//½»»»Êý¾Ý
+	}
+	while(i<p->keynum)//½«¸Ã½áµãºóÃæµÄÊý¾ÝºóÒÆ
+	{
+		copyData(p->key[i],p->key[i+1]);//½«ºóÒ»¸öÊý¾Ý¸´ÖÆµ½Ç°Ò»¸öÊý¾Ý
+		i++;
+	}
+	p->keynum--;//É¾³ý½áµã
+	T=p;
 }
 
 void BTree::destroyBTree(pBTNode &T)

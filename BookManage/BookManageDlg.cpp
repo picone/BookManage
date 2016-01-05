@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDCANCEL, &CBookManageDlg::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_INSERT, &CBookManageDlg::OnBnClickedInsert)
+	ON_BN_CLICKED(IDC_REFLASH, &CBookManageDlg::OnBnClickedReflash)
 END_MESSAGE_MAP()
 
 
@@ -136,12 +137,36 @@ void CBookManageDlg::OnBnClickedInsert()
 	}
 }
 
-void CBookManageDlg::UpdateList()
+void CBookManageDlg::DisplayList(pBTNode T)
 {
-	//tree.Traverse(&CBookManageDlg::DisplayLine);
+	int i,row;
+	CString s;
+	DataType data;
+	if(T!=NULL)
+	{
+		for(i=1;i<=T->keynum;i++)
+		{
+			data=T->key[i];
+			row=m_list.GetItemCount();
+			s.Format(_T("%d"),data.no);
+			m_list.InsertItem(row,s);
+			m_list.SetItemText(row,1,data.name);
+			m_list.SetItemText(row,2,data.author);
+			s.Format(_T("%d"),data.current_num);
+			m_list.SetItemText(row,3,s);
+			s.Format(_T("%d"),data.total_num);
+			m_list.SetItemText(row,4,s);
+		}
+		for(i=0;i<=T->keynum;i++)DisplayList(T->ptr[i]);
+	}
 }
 
-void CBookManageDlg::DisplayLine(DataType e)
-{
 
+void CBookManageDlg::OnBnClickedReflash()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_list.SetRedraw(FALSE);
+	m_list.DeleteAllItems();
+	DisplayList(tree.GetRoot());
+	m_list.SetRedraw(TRUE);
 }
