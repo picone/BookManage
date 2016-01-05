@@ -28,7 +28,7 @@ CShowStructDlg::~CShowStructDlg()
 void CShowStructDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_TREE1, m_tree);
+	DDX_Control(pDX, IDC_TREE, m_tree);
 }
 
 BEGIN_MESSAGE_MAP(CShowStructDlg, CDialogEx)

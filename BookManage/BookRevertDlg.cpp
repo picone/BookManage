@@ -15,7 +15,7 @@ CBookRevertDlg::CBookRevertDlg(CWnd* pParent /*=NULL*/)
 
 }
 
-CBookRevertDlg::CBookRevertDlg(DataType *data):CDialogEx(CBookRevertDlg::IDD,NULL)
+CBookRevertDlg::CBookRevertDlg(DataType *data):CDialogEx(CBookRevertDlg::IDD,NULL),m_no(0),m_name(_T(""))
 {
 	book=data;
 }

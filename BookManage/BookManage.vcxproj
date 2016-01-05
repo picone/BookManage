@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BookBorrowDlg.h" />
+    <ClInclude Include="BookInfoDlg.h" />
     <ClInclude Include="BookManage.h" />
     <ClInclude Include="BookManageDlg.h" />
     <ClInclude Include="BookRevertDlg.h" />
@@ -115,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BookBorrowDlg.cpp" />
+    <ClCompile Include="BookInfoDlg.cpp" />
     <ClCompile Include="BookManage.cpp" />
     <ClCompile Include="BookManageDlg.cpp" />
     <ClCompile Include="BookRevertDlg.cpp" />

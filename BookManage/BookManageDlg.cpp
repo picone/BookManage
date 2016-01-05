@@ -7,6 +7,7 @@
 #include "ShowStructDlg.h"
 #include "BookBorrowDlg.h"
 #include "BookRevertDlg.h"
+#include "BookInfoDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -39,6 +40,7 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_SHOW_STRUCT, &CBookManageDlg::OnBnClickedShowStruct)
 	ON_BN_CLICKED(IDC_BORROW, &CBookManageDlg::OnBnClickedBorrow)
 	ON_BN_CLICKED(IDC_REVERT, &CBookManageDlg::OnBnClickedRevert)
+	ON_NOTIFY(NM_DBLCLK, IDC_BOOK, &CBookManageDlg::OnNMDblclkBook)
 END_MESSAGE_MAP()
 // CBookManageDlg 消息处理程序
 BOOL CBookManageDlg::OnInitDialog()
@@ -329,4 +331,28 @@ void CBookManageDlg::OnBnClickedRevert()
 			}
 		}
 	}
+}
+
+void CBookManageDlg::OnNMDblclkBook(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	POSITION pos=m_list.GetFirstSelectedItemPosition();
+	int row;
+	KeyType key;
+	if(pos!=NULL)
+	{
+		row=(int)m_list.GetNextSelectedItem(pos);
+		if(row>=0)
+		{
+			key=_ttoi(m_list.GetItemText(row,0));
+			result res=(*tree).SearchBTree(key);
+			if(res.tag==TRUE)
+			{
+				CBookInfoDlg dlg(&(res.pt->key[res.i]));
+				dlg.DoModal();
+			}
+		}
+	}
+	*pResult = 0;
 }

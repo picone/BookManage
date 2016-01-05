@@ -60,6 +60,9 @@
     <ClInclude Include="BookRevertDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BookInfoDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BookManage.cpp">
@@ -90,6 +93,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="BookRevertDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BookInfoDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

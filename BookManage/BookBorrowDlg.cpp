@@ -31,9 +31,9 @@ void CBookBorrowDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_BOOK_NAME, m_name);
 	DDX_Text(pDX, IDC_BOOK_NUM, m_num);
-	DDX_Text(pDX, IDC_EDIT2, m_no);
+	DDX_Text(pDX, IDC_BORROW_ID, m_no);
 	DDV_MinMaxInt(pDX, m_no, 0, INT_MAX);
-	DDX_Text(pDX, IDC_EDIT1, m_date);
+	DDX_Text(pDX, IDC_DATE, m_date);
 	DDV_MinMaxInt(pDX, m_date, 0, 99991231);
 }
 
