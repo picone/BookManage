@@ -22,6 +22,7 @@
     <None Include="res\BookManage.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BookManage.h">
@@ -42,6 +43,9 @@
     <ClInclude Include="BTree.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="InputBookDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BookManage.cpp">
@@ -54,6 +58,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="BTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InputBookDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

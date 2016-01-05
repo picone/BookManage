@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "BookManage.h"
 #include "BookManageDlg.h"
+#include "InputBookDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -50,22 +51,14 @@ BOOL CBookManageDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	/*初始化ListView*/
+	//整行选择+显示网格线
+	m_list.SetExtendedStyle(m_list.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 	m_list.InsertColumn(0,_T("书号"),LVCFMT_LEFT,100);
-	m_list.InsertColumn(1,_T("书名"),LVCFMT_LEFT,100);
+	m_list.InsertColumn(1,_T("书名"),LVCFMT_LEFT,110);
 	m_list.InsertColumn(2,_T("著者"),LVCFMT_LEFT,100);
 	m_list.InsertColumn(3,_T("现存量"),LVCFMT_LEFT,60);
 	m_list.InsertColumn(4,_T("总存量"),LVCFMT_LEFT,60);
-	DataType test;
-	test.name=_T("c1");
-	test.no=1;
-	tree.InsertBTree(test);
-	test.no=2;
-	test.name=_T("c2");
-	tree.InsertBTree(test);
-	test.no=3;
-	test.name=_T("c3");
-	tree.InsertBTree(test);
-	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+	return TRUE;// 除非将焦点设置到控件，否则返回 TRUE
 }
 
 // 如果向对话框添加最小化按钮，则需要下面的代码
@@ -104,17 +97,51 @@ HCURSOR CBookManageDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-
 void CBookManageDlg::OnBnClickedCancel()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CDialogEx::OnCancel();
 }
 
-
 void CBookManageDlg::OnBnClickedInsert()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	
+	CInputBookDlg dlg;
+	DataType data;
+	if(dlg.DoModal()==IDOK)
+	{
+		data.no=dlg.book_no;
+		data.name=dlg.book_name;
+		data.author=dlg.book_author;
+		data.current_num=data.total_num=dlg.book_num;
+		//插入到B树
+		if(tree.InsertBTree(data)==OK)
+		{
+			//插入到ListControl
+			int row=m_list.GetItemCount();
+			CString s;
+			s.Format(_T("%d"),data.no);
+			m_list.InsertItem(row,s);
+			m_list.SetItemText(row,1,data.name);
+			m_list.SetItemText(row,2,data.author);
+			s.Format(_T("%d"),data.current_num);
+			m_list.SetItemText(row,3,s);
+			s.Format(_T("%d"),data.total_num);
+			m_list.SetItemText(row,4,s);
+		}
+		else
+		{
+			AfxMessageBox(_T("此书号已存在"));
+		}
+	}
+}
+
+void CBookManageDlg::UpdateList()
+{
+	//tree.Traverse(&CBookManageDlg::DisplayLine);
+}
+
+void CBookManageDlg::DisplayLine(DataType e)
+{
+
 }

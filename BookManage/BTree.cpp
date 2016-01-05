@@ -1,5 +1,6 @@
 // BTree.cpp : ÊµÏÖÎÄ¼þ
 #include "StdAfx.h"
+#include "BookManageDlg.cpp"
 #include "BTree.h"
 
 BTree::BTree()
@@ -93,10 +94,18 @@ Status BTree::InsertBTree(DataType data)
 	return OK;
 }
 
+void BTree::Traverse(void (CBookManageDlg::*visit)(DataType e))//±éÀú
+{
+	Traverse(root,visit);
+}
+
 void BTree::copyData(DataType &to,DataType from)//¸´ÖÆ¹Ø¼ü×ÖµÄÐÅÏ¢
 {
 	to.no=from.no;
 	to.name=from.name;
+	to.author=from.author;
+	to.current_num=from.current_num;
+	to.total_num=from.total_num;
 }
 
 int BTree::Search(pBTNode p,KeyType K)//²éÕÒÔÚÄ³¸ö½áµãÖÐµÄÎ»ÖÃ
@@ -151,6 +160,16 @@ void BTree::newRoot(pBTNode &T,pBTNode p,DataType x,pBTNode ap)//Éú³ÉÒ»¸öÐÂµÄ½áµ
 	if(p!=NULL)p->parent=T;
 	if(ap!=NULL)ap->parent=T;
 	T->parent=NULL;
+}
+
+void Traverse(pBTNode T,void (CBookManageDlg::*visit)(DataType e))//±éÀú
+{
+	int i; 
+	if(T!=NULL)
+	{
+		for(i=1;i<=T->keynum;i++)visit(T->key[i]);
+		for(i=0;i<=T->keynum;i++)Traverse(T->ptr[i],visit);
+	}
 }
 
 void BTree::destroyBTree(pBTNode &T)
