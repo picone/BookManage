@@ -17,6 +17,7 @@ public:
 	afx_msg void OnBnClickedReflash();
 	afx_msg void OnBnClickedDelete();
 	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedShowStruct();
 protected:
 	HICON m_hIcon;
 	// 生成的消息映射函数

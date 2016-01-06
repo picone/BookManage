@@ -6,6 +6,7 @@
 #include "BookManage.h"
 #include "BookManageDlg.h"
 #include "InputBookDlg.h"
+#include "ShowStructDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -35,6 +36,7 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_REFLASH, &CBookManageDlg::OnBnClickedReflash)
 	ON_BN_CLICKED(IDC_DELETE, &CBookManageDlg::OnBnClickedDelete)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_SHOW_STRUCT, &CBookManageDlg::OnBnClickedShowStruct)
 END_MESSAGE_MAP()
 // CBookManageDlg 消息处理程序
 BOOL CBookManageDlg::OnInitDialog()
@@ -141,7 +143,11 @@ void CBookManageDlg::OnBnClickedInsert()
 		}
 		else
 		{
-			AfxMessageBox(_T("此书号已存在"));
+			result res=(*tree).SearchBTree(data.no);
+			res.pt->key[res.i].current_num+=data.current_num;
+			res.pt->key[res.i].total_num+=data.total_num;
+			AfxMessageBox(_T("已增加数量"));
+			OnBnClickedReflash();
 		}
 	}
 }
@@ -228,4 +234,11 @@ void CBookManageDlg::EndTime(RunTimer &timer)
 	timer.get_str_time(s);
 	m_timer=s;
 	UpdateData(FALSE);
+}
+
+void CBookManageDlg::OnBnClickedShowStruct()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CShowStructDlg dlg((*tree).GetRoot());
+	dlg.DoModal();
 }
