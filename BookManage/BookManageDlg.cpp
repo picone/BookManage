@@ -1,7 +1,5 @@
-
 // BookManageDlg.cpp : 实现文件
 //
-
 #include "stdafx.h"
 #include "BookManage.h"
 #include "BookManageDlg.h"
@@ -68,6 +66,10 @@ BOOL CBookManageDlg::OnInitDialog()
 		loader.Close();
 		OnBnClickedReflash();
 	}
+	/*初始化日志文件写入指针*/
+	log_file.Open(_T("log.txt"),CFile::modeNoTruncate|CFile::modeWrite);
+	log_file.SeekToEnd();
+	WriteLog(_T("系统启动"));
 	return TRUE;// 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -124,6 +126,7 @@ void CBookManageDlg::OnBnClickedInsert()
 		data.name=dlg.book_name;
 		data.author=dlg.book_author;
 		data.current_num=data.total_num=dlg.book_num;
+		WriteLog(_T("增加图书")+data.name);
 		//插入到B树
 		RunTimer timer;
 		if((*tree).InsertBTree(data)==OK)
@@ -203,6 +206,7 @@ void CBookManageDlg::OnBnClickedDelete()
 			if((*tree).DeleteBTree(key)==OK)
 			{
 				EndTime(timer);
+				WriteLog(_T("删除图书")+m_list.GetItemText(row,1));
 				m_list.DeleteItem(row);
 				AfxMessageBox(_T("删除成功!"));
 			}
@@ -219,12 +223,15 @@ void CBookManageDlg::OnDestroy()
 	CDialogEx::OnDestroy();
 	// TODO: 在此处添加消息处理程序代码
 	/*把所有记录保存*/
+	WriteLog(_T("系统关闭"));
 	CFile file(_T("record.dat"),CFile::modeCreate|CFile::modeReadWrite);
 	CArchive store(&file,CArchive::store);
 	store.WriteObject(tree);
 	store.Flush();
 	store.Close();
 	delete tree;
+	log_file.Flush();
+	log_file.Close();
 }
 
 void CBookManageDlg::EndTime(RunTimer &timer)
@@ -241,4 +248,13 @@ void CBookManageDlg::OnBnClickedShowStruct()
 	// TODO: 在此添加控件通知处理程序代码
 	CShowStructDlg dlg((*tree).GetRoot());
 	dlg.DoModal();
+}
+
+void CBookManageDlg::WriteLog(LPCTSTR msg)
+{
+	SYSTEMTIME sys_time;
+	CString str;
+	GetLocalTime(&sys_time);
+	str.Format(_T("%4d年%2d月%2d日 %2d:%2d:%2d %s\r\n"),sys_time.wYear,sys_time.wMonth,sys_time.wDay,sys_time.wHour,sys_time.wMinute,sys_time.wSecond,msg);
+	log_file.Write(str,str.GetLength()*sizeof(wchar_t));
 }
