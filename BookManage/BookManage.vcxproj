@@ -105,6 +105,7 @@
     <ClInclude Include="BookManage.h" />
     <ClInclude Include="BookManageDlg.h" />
     <ClInclude Include="BookRevertDlg.h" />
+    <ClInclude Include="BookSearchDlg.h" />
     <ClInclude Include="Borrow.h" />
     <ClInclude Include="BTree.h" />
     <ClInclude Include="InputBookDlg.h" />
@@ -120,6 +121,7 @@
     <ClCompile Include="BookManage.cpp" />
     <ClCompile Include="BookManageDlg.cpp" />
     <ClCompile Include="BookRevertDlg.cpp" />
+    <ClCompile Include="BookSearchDlg.cpp" />
     <ClCompile Include="Borrow.cpp" />
     <ClCompile Include="BTree.cpp" />
     <ClCompile Include="InputBookDlg.cpp" />

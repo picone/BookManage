@@ -8,7 +8,9 @@
 #include "BookBorrowDlg.h"
 #include "BookRevertDlg.h"
 #include "BookInfoDlg.h"
+#include "BookSearchDlg.h"
 #include "afxdialogex.h"
+#include <afxtempl.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,6 +43,7 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BORROW, &CBookManageDlg::OnBnClickedBorrow)
 	ON_BN_CLICKED(IDC_REVERT, &CBookManageDlg::OnBnClickedRevert)
 	ON_NOTIFY(NM_DBLCLK, IDC_BOOK, &CBookManageDlg::OnNMDblclkBook)
+	ON_BN_CLICKED(IDC_SEARCH, &CBookManageDlg::OnBnClickedSearch)
 END_MESSAGE_MAP()
 // CBookManageDlg 消息处理程序
 BOOL CBookManageDlg::OnInitDialog()
@@ -77,7 +80,7 @@ BOOL CBookManageDlg::OnInitDialog()
 	}
 	/*初始化日志文件写入指针*/
 	log_file=new CFile(_T("log.txt"),CFile::modeCreate|CFile::modeReadWrite|CFile::modeNoTruncate);
-	(*log_file).SeekToEnd();
+	log_file->SeekToEnd();
 	WriteLog(_T("系统启动"));
 	return TRUE;// 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -85,7 +88,6 @@ BOOL CBookManageDlg::OnInitDialog()
 // 如果向对话框添加最小化按钮，则需要下面的代码
 //  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
-
 void CBookManageDlg::OnPaint()
 {
 	if (IsIconic())
@@ -138,29 +140,19 @@ void CBookManageDlg::OnBnClickedInsert()
 		WriteLog(_T("增加图书")+data.name);
 		//插入到B树
 		RunTimer timer;
-		if((*tree).InsertBTree(data)==OK)
+		if(tree->InsertBTree(data)==OK)
 		{
 			//插入到ListControl
 			EndTime(timer);
-			CString s;
-			int row=m_list.GetItemCount();
-			s.Format(_T("%d"),data.no);
-			m_list.InsertItem(row,s);
-			m_list.SetItemText(row,1,data.name);
-			m_list.SetItemText(row,2,data.author);
-			s.Format(_T("%d"),data.current_num);
-			m_list.SetItemText(row,3,s);
-			s.Format(_T("%d"),data.total_num);
-			m_list.SetItemText(row,4,s);
 		}
 		else
 		{
-			result res=(*tree).SearchBTree(data.no);
+			result res=tree->SearchBTree(data.no);
 			res.pt->key[res.i].current_num+=data.current_num;
 			res.pt->key[res.i].total_num+=data.total_num;
 			AfxMessageBox(_T("已增加数量"));
-			OnBnClickedReflash();
 		}
+		OnBnClickedReflash();
 	}
 }
 
@@ -169,6 +161,7 @@ void CBookManageDlg::DisplayList(pBTNode T)
 	int i,row;
 	CString s;
 	DataType data;
+	pBookList p,q;
 	if(T!=NULL)
 	{
 		for(i=1;i<=T->keynum;i++)
@@ -183,6 +176,18 @@ void CBookManageDlg::DisplayList(pBTNode T)
 			m_list.SetItemText(row,3,s);
 			s.Format(_T("%d"),data.total_num);
 			m_list.SetItemText(row,4,s);
+
+			q=new BookList;
+			q->no=data.no;
+			if(map.Lookup(data.author,p)==TRUE)
+			{
+				q->next=p;
+			}
+			else
+			{
+				q->next=NULL;
+			}
+			map[data.author]=q;
 		}
 		for(i=0;i<=T->keynum;i++)DisplayList(T->ptr[i]);
 	}
@@ -194,7 +199,8 @@ void CBookManageDlg::OnBnClickedReflash()
 	m_list.SetRedraw(FALSE);
 	m_list.DeleteAllItems();
 	RunTimer timer;
-	DisplayList((*tree).GetRoot());
+	map.RemoveAll();//也更新哈希表
+	DisplayList(tree->GetRoot());
 	EndTime(timer);
 	m_list.SetRedraw(TRUE);
 }
@@ -212,7 +218,7 @@ void CBookManageDlg::OnBnClickedDelete()
 		{
 			key=_ttoi(m_list.GetItemText(row,0));
 			RunTimer timer;
-			if((*tree).DeleteBTree(key)==OK)
+			if(tree->DeleteBTree(key)==OK)
 			{
 				EndTime(timer);
 				WriteLog(_T("删除图书")+m_list.GetItemText(row,1));
@@ -229,6 +235,9 @@ void CBookManageDlg::OnBnClickedDelete()
 
 void CBookManageDlg::OnDestroy()
 {
+	CString author;
+	POSITION pos;
+	pBookList p,q;
 	CDialogEx::OnDestroy();
 	// TODO: 在此处添加消息处理程序代码
 	/*把所有记录保存*/
@@ -238,10 +247,22 @@ void CBookManageDlg::OnDestroy()
 	store.WriteObject(tree);
 	store.Flush();
 	store.Close();
-	delete tree;
-	(*log_file).Flush();
-	(*log_file).Close();
-	delete log_file;
+	delete tree;//销毁B树
+	log_file->Flush();
+	log_file->Close();
+	delete log_file;//销毁日志文件句柄
+	//销毁哈希表的结点
+	pos=map.GetStartPosition();
+	while(pos)
+	{
+		map.GetNextAssoc(pos,author,p);
+		while(p)
+		{
+			q=p;
+			p=p->next;
+			delete q;
+		}
+	}
 }
 
 void CBookManageDlg::EndTime(RunTimer &timer)
@@ -256,7 +277,7 @@ void CBookManageDlg::EndTime(RunTimer &timer)
 void CBookManageDlg::OnBnClickedShowStruct()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CShowStructDlg dlg((*tree).GetRoot());
+	CShowStructDlg dlg(tree->GetRoot());
 	dlg.DoModal();
 }
 
@@ -268,7 +289,7 @@ void CBookManageDlg::WriteLog(LPCTSTR msg)
 		CString str;
 		GetLocalTime(&sys_time);
 		str.Format(_T("%4d年%2d月%2d日 %2d:%2d:%2d %s\r\n"),sys_time.wYear,sys_time.wMonth,sys_time.wDay,sys_time.wHour,sys_time.wMinute,sys_time.wSecond,msg);
-		(*log_file).Write(str,str.GetLength()*sizeof(wchar_t));
+		log_file->Write(str,str.GetLength()*sizeof(wchar_t));
 	}
 }
 
@@ -284,7 +305,7 @@ void CBookManageDlg::OnBnClickedBorrow()
 		if(row>=0)
 		{
 			key=_ttoi(m_list.GetItemText(row,0));
-			result res=(*tree).SearchBTree(key);
+			result res=tree->SearchBTree(key);
 			if(res.tag==TRUE)
 			{
 				if(res.pt->key[res.i].current_num<=0)
@@ -316,7 +337,7 @@ void CBookManageDlg::OnBnClickedRevert()
 		if(row>=0)
 		{
 			key=_ttoi(m_list.GetItemText(row,0));
-			result res=(*tree).SearchBTree(key);
+			result res=tree->SearchBTree(key);
 			if(res.tag==TRUE)
 			{
 				if(res.pt->key[res.i].current_num==res.pt->key[res.i].total_num)
@@ -349,7 +370,7 @@ void CBookManageDlg::OnNMDblclkBook(NMHDR *pNMHDR, LRESULT *pResult)
 		if(row>=0)
 		{
 			key=_ttoi(m_list.GetItemText(row,0));
-			result res=(*tree).SearchBTree(key);
+			result res=tree->SearchBTree(key);
 			if(res.tag==TRUE)
 			{
 				CBookInfoDlg dlg(&(res.pt->key[res.i]));
@@ -358,4 +379,13 @@ void CBookManageDlg::OnNMDblclkBook(NMHDR *pNMHDR, LRESULT *pResult)
 		}
 	}
 	*pResult = 0;
+}
+
+void CBookManageDlg::OnBnClickedSearch()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CBookSearchDlg dlg;
+	dlg.tree=tree;
+	dlg.map=&map;
+	dlg.DoModal();
 }

@@ -51,26 +51,26 @@ BOOL CBookInfoDlg::OnInitDialog()
 	CString s;
 	CDialogEx::OnInitDialog();
 	// TODO:  在此添加额外的初始化
-	m_no=(*book).no;
-	m_name=(*book).name;
-	m_author=(*book).author;
-	m_current_num=(*book).current_num;
-	m_total_num=(*book).total_num;
+	m_no=book->no;
+	m_name=book->name;
+	m_author=book->author;
+	m_current_num=book->current_num;
+	m_total_num=book->total_num;
 	m_list.SetExtendedStyle(m_list.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 	m_list.InsertColumn(0,_T("阅读证号"),LVCFMT_LEFT,100);
 	m_list.InsertColumn(1,_T("借阅时间"),LVCFMT_LEFT,100);
 	m_list.InsertColumn(2,_T("归还时间"),LVCFMT_LEFT,100);
-	for(vector<Borrow>::iterator it=(*book).borrow.begin();it!=(*book).borrow.end();)
+	for(vector<Borrow>::iterator it=book->borrow.begin();it!=book->borrow.end();)
 	{
-		s.Format(_T("%d"),(*it).no);
+		s.Format(_T("%d"),it->no);
 		m_list.InsertItem(i,s);
-		s.Format(_T("%d"),(*it).start_time);
+		s.Format(_T("%d"),it->start_time);
 		m_list.SetItemText(i,1,s);
-		s.Format(_T("%d"),(*it).end_time);
+		s.Format(_T("%d"),it->end_time);
 		m_list.SetItemText(i,2,s);
-		if((*it).end_time<min_date)
+		if(it->end_time<min_date)
 		{
-			min_date=(*it).end_time;
+			min_date=it->end_time;
 		}
 		it++;
 		i++;
@@ -79,7 +79,7 @@ BOOL CBookInfoDlg::OnInitDialog()
 	{
 		for(vector<Borrow>::iterator it=(*book).borrow.begin();it!=(*book).borrow.end();)
 		{
-			m_ids.Format(_T("%s%d "),m_ids,(*it).no);
+			if(it->end_time==min_date)m_ids.Format(_T("%s%d "),m_ids,(*it).no);
 			it++;
 		}
 	}

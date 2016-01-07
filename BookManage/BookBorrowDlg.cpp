@@ -45,8 +45,8 @@ BOOL CBookBorrowDlg::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 	GetLocalTime(&sys_time);
 	now_time=sys_time.wYear*10000+sys_time.wMonth*100+sys_time.wDay;
-	m_name=(*book).name;
-	str.Format(_T("%d"),(*book).current_num);
+	m_name=book->name;
+	str.Format(_T("%d"),book->current_num);
 	m_num=str;
 	m_no=0;
 	m_date=now_time;
@@ -78,7 +78,7 @@ void CBookBorrowDlg::OnBnClickedOk()
 	borrow.no=m_no;
 	borrow.start_time=now_time;
 	borrow.end_time=m_date;
-	(*book).borrow.push_back(borrow);
-	(*book).current_num--;
+	book->borrow.push_back(borrow);
+	book->current_num--;
 	CDialogEx::OnOK();
 }

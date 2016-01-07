@@ -31,10 +31,13 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 private:
 	BTree *tree;
+	CMap<CString,LPCTSTR,pBookList,pBookList> map;
 	CFile *log_file;
 	CListCtrl m_list;//图书ListView
 	CString m_timer;//计时
 	void DisplayList(pBTNode T);
 	void EndTime(RunTimer &timer);
 	void WriteLog(LPCTSTR msg);
+public:
+	afx_msg void OnBnClickedSearch();
 };

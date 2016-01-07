@@ -10,6 +10,10 @@
 
 #include "resource.h"		// 主符号
 
+typedef struct BookList{
+	int no;
+	struct BookList *next;
+}*pBookList;
 
 // CBookManageApp:
 // 有关此类的实现，请参阅 BookManage.cpp
