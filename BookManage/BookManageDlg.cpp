@@ -5,6 +5,8 @@
 #include "BookManageDlg.h"
 #include "InputBookDlg.h"
 #include "ShowStructDlg.h"
+#include "BookBorrowDlg.h"
+#include "BookRevertDlg.h"
 #include "afxdialogex.h"
 
 #ifdef _DEBUG
@@ -35,11 +37,13 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_DELETE, &CBookManageDlg::OnBnClickedDelete)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_SHOW_STRUCT, &CBookManageDlg::OnBnClickedShowStruct)
+	ON_BN_CLICKED(IDC_BORROW, &CBookManageDlg::OnBnClickedBorrow)
+	ON_BN_CLICKED(IDC_REVERT, &CBookManageDlg::OnBnClickedRevert)
 END_MESSAGE_MAP()
 // CBookManageDlg 消息处理程序
 BOOL CBookManageDlg::OnInitDialog()
 {
-	CFile file;
+	CFile file(_T("record.dat"),CFile::modeRead|CFile::modeNoTruncate|CFile::modeCreate);
 	CDialogEx::OnInitDialog();
 
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
@@ -58,7 +62,7 @@ BOOL CBookManageDlg::OnInitDialog()
 	m_list.InsertColumn(4,_T("总存量"),LVCFMT_LEFT,60);
 	/*载入记录*/
 	tree=new BTree();
-	if(file.Open(_T("record.dat"),CFile::modeRead|CFile::modeNoTruncate|CFile::modeCreate)==TRUE)
+	if(file!=NULL)
 	{
 		file.SeekToBegin();
 		CArchive loader(&file,CArchive::load);
@@ -67,8 +71,8 @@ BOOL CBookManageDlg::OnInitDialog()
 		OnBnClickedReflash();
 	}
 	/*初始化日志文件写入指针*/
-	log_file.Open(_T("log.txt"),CFile::modeNoTruncate|CFile::modeWrite);
-	log_file.SeekToEnd();
+	log_file=new CFile(_T("log.txt"),CFile::modeCreate|CFile::modeReadWrite|CFile::modeNoTruncate);
+	(*log_file).SeekToEnd();
 	WriteLog(_T("系统启动"));
 	return TRUE;// 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -230,8 +234,9 @@ void CBookManageDlg::OnDestroy()
 	store.Flush();
 	store.Close();
 	delete tree;
-	log_file.Flush();
-	log_file.Close();
+	(*log_file).Flush();
+	(*log_file).Close();
+	delete log_file;
 }
 
 void CBookManageDlg::EndTime(RunTimer &timer)
@@ -252,9 +257,76 @@ void CBookManageDlg::OnBnClickedShowStruct()
 
 void CBookManageDlg::WriteLog(LPCTSTR msg)
 {
-	SYSTEMTIME sys_time;
-	CString str;
-	GetLocalTime(&sys_time);
-	str.Format(_T("%4d年%2d月%2d日 %2d:%2d:%2d %s\r\n"),sys_time.wYear,sys_time.wMonth,sys_time.wDay,sys_time.wHour,sys_time.wMinute,sys_time.wSecond,msg);
-	log_file.Write(str,str.GetLength()*sizeof(wchar_t));
+	if(log_file!=NULL)
+	{
+		SYSTEMTIME sys_time;
+		CString str;
+		GetLocalTime(&sys_time);
+		str.Format(_T("%4d年%2d月%2d日 %2d:%2d:%2d %s\r\n"),sys_time.wYear,sys_time.wMonth,sys_time.wDay,sys_time.wHour,sys_time.wMinute,sys_time.wSecond,msg);
+		(*log_file).Write(str,str.GetLength()*sizeof(wchar_t));
+	}
+}
+
+void CBookManageDlg::OnBnClickedBorrow()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	POSITION pos=m_list.GetFirstSelectedItemPosition();
+	int row;
+	KeyType key;
+	if(pos!=NULL)
+	{
+		row=(int)m_list.GetNextSelectedItem(pos);
+		if(row>=0)
+		{
+			key=_ttoi(m_list.GetItemText(row,0));
+			result res=(*tree).SearchBTree(key);
+			if(res.tag==TRUE)
+			{
+				if(res.pt->key[res.i].current_num<=0)
+				{
+					AfxMessageBox(_T("该书没有库存"));
+				}
+				else
+				{
+					CBookBorrowDlg dlg(&(res.pt->key[res.i]));
+					if(dlg.DoModal()==OK)
+					{
+						OnBnClickedReflash();
+					}
+				}
+			}
+		}
+	}
+}
+
+void CBookManageDlg::OnBnClickedRevert()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	POSITION pos=m_list.GetFirstSelectedItemPosition();
+	int row;
+	KeyType key;
+	if(pos!=NULL)
+	{
+		row=(int)m_list.GetNextSelectedItem(pos);
+		if(row>=0)
+		{
+			key=_ttoi(m_list.GetItemText(row,0));
+			result res=(*tree).SearchBTree(key);
+			if(res.tag==TRUE)
+			{
+				if(res.pt->key[res.i].current_num==res.pt->key[res.i].total_num)
+				{
+					AfxMessageBox(_T("该书没有借出"));
+				}
+				else
+				{
+					CBookRevertDlg dlg(&(res.pt->key[res.i]));
+					if(dlg.DoModal()==OK)
+					{
+						OnBnClickedReflash();
+					}
+				}
+			}
+		}
+	}
 }

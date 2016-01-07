@@ -166,7 +166,8 @@ Status BTree::DeleteBTree(KeyType k)//删除结点,通过关键字k删除
 void BTree::Serialize(CArchive& ar)//序列化
 {
 	DataType data;
-	int size,i;
+	int size,i,j,k;
+	Borrow borrow;
 	CObject::Serialize(ar);
 	if(ar.IsStoring())//序列化
 	{
@@ -177,7 +178,13 @@ void BTree::Serialize(CArchive& ar)//序列化
 		for(i=0;i<size;i++)
 		{
 			data=arr.GetAt(i);
-			ar<<data.no<<data.name<<data.author<<data.current_num<<data.total_num;
+			j=data.borrow.size();
+			ar<<data.no<<data.name<<data.author<<data.current_num<<data.total_num<<j;
+			for(k=0;k<j;k++)
+			{
+				borrow=data.borrow[k];
+				ar<<borrow.no<<borrow.start_time<<borrow.end_time;
+			}
 		}
 	}
 	else//反序列化
@@ -185,7 +192,13 @@ void BTree::Serialize(CArchive& ar)//序列化
 		ar>>size;
 		for(i=0;i<size;i++)
 		{
-			ar>>data.no>>data.name>>data.author>>data.current_num>>data.total_num;
+			ar>>data.no>>data.name>>data.author>>data.current_num>>data.total_num>>j;
+			while(j>0)
+			{
+				ar>>borrow.no>>borrow.start_time>>borrow.end_time;
+				data.borrow.push_back(borrow);
+				j--;
+			}
 			InsertBTree(data);
 		}
 	}
@@ -198,6 +211,7 @@ void BTree::copyData(DataType &to,DataType from)//复制关键字的信息
 	to.author=from.author;
 	to.current_num=from.current_num;
 	to.total_num=from.total_num;
+	to.borrow=from.borrow;
 }
 
 int BTree::Search(pBTNode p,KeyType K)//查找在某个结点中的位置

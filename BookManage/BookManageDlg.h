@@ -16,8 +16,11 @@ public:
 	afx_msg void OnBnClickedInsert();
 	afx_msg void OnBnClickedReflash();
 	afx_msg void OnBnClickedDelete();
-	afx_msg void OnDestroy();
 	afx_msg void OnBnClickedShowStruct();
+	afx_msg void OnBnClickedBorrow();
+	afx_msg void OnBnClickedRevert();
+	afx_msg void OnNMDblclkBook(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDestroy();
 protected:
 	HICON m_hIcon;
 	// 生成的消息映射函数
@@ -28,7 +31,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 private:
 	BTree *tree;
-	CFile log_file;
+	CFile *log_file;
 	CListCtrl m_list;//图书ListView
 	CString m_timer;//计时
 	void DisplayList(pBTNode T);

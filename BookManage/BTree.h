@@ -1,8 +1,10 @@
 #pragma once
 // BTree
+#include <vector>
+#include "Borrow.h"
+using namespace std;
 #define OK 1
 #define ERROR 0
-#define OVERFLOW -2
 #define Status int
 #define M 3
 
@@ -14,6 +16,7 @@ typedef struct Book{
 	CString author;
 	int current_num;
 	int total_num;
+	vector<Borrow> borrow;
 }DataType;
 
 typedef struct BTNode{

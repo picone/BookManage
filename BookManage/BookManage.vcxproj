@@ -100,8 +100,11 @@
     <None Include="res\BookManage.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BookBorrowDlg.h" />
     <ClInclude Include="BookManage.h" />
     <ClInclude Include="BookManageDlg.h" />
+    <ClInclude Include="BookRevertDlg.h" />
+    <ClInclude Include="Borrow.h" />
     <ClInclude Include="BTree.h" />
     <ClInclude Include="InputBookDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -111,8 +114,11 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BookBorrowDlg.cpp" />
     <ClCompile Include="BookManage.cpp" />
     <ClCompile Include="BookManageDlg.cpp" />
+    <ClCompile Include="BookRevertDlg.cpp" />
+    <ClCompile Include="Borrow.cpp" />
     <ClCompile Include="BTree.cpp" />
     <ClCompile Include="InputBookDlg.cpp" />
     <ClCompile Include="RunTimer.cpp" />
