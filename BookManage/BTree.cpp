@@ -165,7 +165,6 @@ Status BTree::DeleteBTree(KeyType k)//删除结点,通过关键字k删除
 
 void BTree::Serialize(CArchive& ar)//序列化
 {
-	DataType data;
 	int size,i,j,k;
 	Borrow borrow;
 	CObject::Serialize(ar);
@@ -177,13 +176,13 @@ void BTree::Serialize(CArchive& ar)//序列化
 		ar<<size;
 		for(i=0;i<size;i++)
 		{
+			DataType data;
 			data=arr.GetAt(i);
 			j=data.borrow.size();
 			ar<<data.no<<data.name<<data.author<<data.current_num<<data.total_num<<j;
 			for(k=0;k<j;k++)
 			{
-				borrow=data.borrow[k];
-				ar<<borrow.no<<borrow.start_time<<borrow.end_time;
+				ar<<data.borrow[k].no<<data.borrow[k].start_time<<data.borrow[k].end_time;
 			}
 		}
 	}
@@ -192,12 +191,12 @@ void BTree::Serialize(CArchive& ar)//序列化
 		ar>>size;
 		for(i=0;i<size;i++)
 		{
+			DataType data;
 			ar>>data.no>>data.name>>data.author>>data.current_num>>data.total_num>>j;
-			while(j>0)
+			for(k=0;k<j;k++)
 			{
 				ar>>borrow.no>>borrow.start_time>>borrow.end_time;
 				data.borrow.push_back(borrow);
-				j--;
 			}
 			InsertBTree(data);
 		}

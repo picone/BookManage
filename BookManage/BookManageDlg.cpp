@@ -9,6 +9,7 @@
 #include "BookRevertDlg.h"
 #include "BookInfoDlg.h"
 #include "BookSearchDlg.h"
+#include "AboutDlg.h"
 #include "afxdialogex.h"
 #include <afxtempl.h>
 
@@ -44,6 +45,7 @@ BEGIN_MESSAGE_MAP(CBookManageDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_REVERT, &CBookManageDlg::OnBnClickedRevert)
 	ON_NOTIFY(NM_DBLCLK, IDC_BOOK, &CBookManageDlg::OnNMDblclkBook)
 	ON_BN_CLICKED(IDC_SEARCH, &CBookManageDlg::OnBnClickedSearch)
+	ON_BN_CLICKED(IDC_BUTTON1, &CBookManageDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 // CBookManageDlg 消息处理程序
 BOOL CBookManageDlg::OnInitDialog()
@@ -387,5 +389,13 @@ void CBookManageDlg::OnBnClickedSearch()
 	CBookSearchDlg dlg;
 	dlg.tree=tree;
 	dlg.map=&map;
+	dlg.DoModal();
+}
+
+
+void CBookManageDlg::OnBnClickedButton1()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CAboutDlg dlg;
 	dlg.DoModal();
 }

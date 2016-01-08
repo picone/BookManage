@@ -77,9 +77,9 @@ BOOL CBookInfoDlg::OnInitDialog()
 	}
 	if(min_date<INT_MAX)
 	{
-		for(vector<Borrow>::iterator it=(*book).borrow.begin();it!=(*book).borrow.end();)
+		for(vector<Borrow>::iterator it=book->borrow.begin();it!=book->borrow.end();)
 		{
-			if(it->end_time==min_date)m_ids.Format(_T("%s%d "),m_ids,(*it).no);
+			if(it->end_time==min_date)m_ids.Format(_T("%s%d "),m_ids,it->no);
 			it++;
 		}
 	}

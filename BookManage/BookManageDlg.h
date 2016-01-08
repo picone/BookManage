@@ -40,4 +40,5 @@ private:
 	void WriteLog(LPCTSTR msg);
 public:
 	afx_msg void OnBnClickedSearch();
+	afx_msg void OnBnClickedButton1();
 };

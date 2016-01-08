@@ -48,12 +48,14 @@ BOOL CShowStructDlg::OnInitDialog()
 void CShowStructDlg::DisplayLine(pBTNode p,HTREEITEM list)
 {
 	int i;
-	CString str;
+	CString temp;
+	CString str(_T(""));
 	if(p!=NULL)
 	{
 		for(i=1;i<=p->keynum;i++)
 		{
-			str.Format(_T("%s%d "),str,p->key[i].no);
+			temp.Format(_T("%d "),p->key[i].no);
+			str+=temp;
 		}
 		if(!str.IsEmpty())list=m_tree.InsertItem(str,0,0,list);
 		for(i=0;i<=p->keynum;i++)DisplayLine(p->ptr[i],list);
